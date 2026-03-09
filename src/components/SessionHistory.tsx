@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { GameStore } from "../types";
+import { formatDateValue } from "../utils/dateFormat";
 import RangeVisual from "./RangeVisual";
 import Leaderboard from "./Leaderboard";
 import { exportStore, importStore } from "../utils/storage";
@@ -132,21 +133,29 @@ export default function SessionHistory({ store, onStoreUpdate, onBack }: Props) 
 
                       {expandedRound === round.id && (
                         <div className="round-detail">
-                          <p>Answer: <strong>{round.answer}</strong> ({round.source})</p>
+                          <p>Answer: <strong>
+                            {round.questionType === "date"
+                              ? formatDateValue(round.answer, round.finalRange.high - round.finalRange.low)
+                              : round.answer}
+                          </strong> ({round.source})</p>
                           <RangeVisual
                             fullRange={round.initialRange}
                             currentRange={round.finalRange}
                             answer={round.answer}
                             showAnswer
+                            questionType={round.questionType}
                           />
                           {round.narrowings.length > 0 && (
                             <div className="narrowing-log compact">
-                              {round.narrowings.map((n, j) => (
-                                <div key={j} className="log-entry">
-                                  <strong>{playerName(n.playerId)}</strong> → [
-                                  {n.low} — {n.high}]
-                                </div>
-                              ))}
+                              {round.narrowings.map((n, j) => {
+                                const nWidth = n.high - n.low;
+                                return (
+                                  <div key={j} className="log-entry">
+                                    <strong>{playerName(n.playerId)}</strong> → [
+                                    {round.questionType === "date" ? formatDateValue(n.low, nWidth) : n.low} — {round.questionType === "date" ? formatDateValue(n.high, nWidth) : n.high}]
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>

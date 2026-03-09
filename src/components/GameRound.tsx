@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Player, Narrowing, Range, Round } from "../types";
+import type { Player, Narrowing, Range, Round, QuestionType } from "../types";
 import QuestionInput from "./QuestionInput";
 import NarrowingPhase from "./NarrowingPhase";
 import RevealPhase from "./RevealPhase";
@@ -13,6 +13,7 @@ interface QuestionData {
   source: string;
   aiNote?: string;
   initialHolderId: string | null;
+  questionType?: QuestionType;
 }
 
 interface Props {
@@ -49,11 +50,12 @@ export default function GameRound({
     source: string,
     aiNote?: string,
     askedByPlayerId?: string,
+    questionType?: QuestionType,
   ) => {
     const initialHolderId = askedByPlayerId
       ?? players[Math.floor(Math.random() * players.length)].id;
 
-    setQuestionData({ question, initialRange, answer, source, aiNote, initialHolderId });
+    setQuestionData({ question, initialRange, answer, source, aiNote, initialHolderId, questionType });
     setPhase("narrowing");
   };
 
@@ -70,6 +72,7 @@ export default function GameRound({
       answer: qd.answer,
       source: qd.source,
       aiNote: qd.aiNote,
+      questionType: qd.questionType,
       initialRange: qd.initialRange,
       narrowings: narrs,
       finalRange: fRange,
@@ -133,6 +136,7 @@ export default function GameRound({
           initialHolderId={questionData.initialHolderId}
           players={players}
           timerDuration={timerDuration}
+          questionType={questionData.questionType}
           onComplete={handleNarrowingComplete}
         />
       )}
@@ -147,6 +151,7 @@ export default function GameRound({
           finalRange={finalRange}
           holderId={holderId}
           players={players}
+          questionType={questionData.questionType}
           onNext={handleNext}
         />
       )}

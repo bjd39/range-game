@@ -1,4 +1,5 @@
-import type { Range } from "../types";
+import type { Range, QuestionType } from "../types";
+import { formatDateWidth } from "./dateFormat";
 
 interface NarrowingError {
   message: string;
@@ -6,7 +7,8 @@ interface NarrowingError {
 
 export function validateNarrowing(
   current: Range,
-  proposed: Range
+  proposed: Range,
+  questionType?: QuestionType,
 ): NarrowingError | null {
   if (proposed.low >= proposed.high) {
     return { message: "Low must be less than high." };
@@ -24,8 +26,12 @@ export function validateNarrowing(
   const proposedWidth = proposed.high - proposed.low;
 
   if (proposedWidth > currentWidth * 0.9) {
+    const maxWidth = currentWidth * 0.9;
+    const formattedMax = questionType === "date"
+      ? formatDateWidth(maxWidth)
+      : String(Math.floor(maxWidth));
     return {
-      message: `Must narrow by at least 10%. Maximum width: ${Math.floor(currentWidth * 0.9)}.`,
+      message: `Must narrow by at least 10%. Maximum width: ${formattedMax}.`,
     };
   }
 

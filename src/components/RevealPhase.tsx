@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import type { Player, Range } from "../types";
+import type { Player, Range, QuestionType } from "../types";
+import { formatDateValue } from "../utils/dateFormat";
 import RangeVisual from "./RangeVisual";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
   finalRange: Range;
   holderId: string | null;
   players: Player[];
+  questionType?: QuestionType;
   onNext: () => void;
 }
 
@@ -23,6 +25,7 @@ export default function RevealPhase({
   finalRange,
   holderId,
   players,
+  questionType,
   onNext,
 }: Props) {
   const [revealed, setRevealed] = useState(false);
@@ -57,10 +60,15 @@ export default function RevealPhase({
         currentRange={finalRange}
         answer={answer}
         showAnswer={revealed}
+        questionType={questionType}
       />
 
       <div className={`answer-reveal ${revealed ? "visible" : ""}`}>
-        <div className="answer-number">{answer}</div>
+        <div className="answer-number">
+          {questionType === "date"
+            ? formatDateValue(answer, finalRange.high - finalRange.low)
+            : answer}
+        </div>
         <div className="answer-source">Source: {source}</div>
         {aiNote && <div className="ai-note">{aiNote}</div>}
       </div>

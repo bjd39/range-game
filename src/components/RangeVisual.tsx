@@ -1,10 +1,12 @@
-import type { Range } from "../types";
+import type { Range, QuestionType } from "../types";
+import { formatDateValue, formatDateWidth } from "../utils/dateFormat";
 
 interface Props {
   fullRange: Range;
   currentRange: Range;
   answer?: number | null;
   showAnswer?: boolean;
+  questionType?: QuestionType;
 }
 
 export default function RangeVisual({
@@ -12,6 +14,7 @@ export default function RangeVisual({
   currentRange,
   answer,
   showAnswer,
+  questionType,
 }: Props) {
   const total = fullRange.high - fullRange.low;
   if (total <= 0) return null;
@@ -26,6 +29,13 @@ export default function RangeVisual({
   const answerInRange =
     answer != null && answer >= currentRange.low && answer <= currentRange.high;
 
+  const isDate = questionType === "date";
+  const rangeWidth = currentRange.high - currentRange.low;
+  const fmtVal = (v: number) => isDate ? formatDateValue(v, rangeWidth) : String(v);
+  const fmtW = (w: number) => isDate ? formatDateWidth(w) : String(w);
+  const fullWidth = fullRange.high - fullRange.low;
+  const fmtFullVal = (v: number) => isDate ? formatDateValue(v, fullWidth) : String(v);
+
   return (
     <div className="range-visual">
       {showAnswer && answerPct != null && (
@@ -34,7 +44,7 @@ export default function RangeVisual({
             className={`range-answer-label ${answerInRange ? "in-range" : "out-of-range"}`}
             style={{ left: `${Math.max(0, Math.min(100, answerPct))}%` }}
           >
-            {answer}
+            {answer != null ? fmtVal(answer) : ""}
           </div>
         </div>
       )}
@@ -47,13 +57,13 @@ export default function RangeVisual({
           className="range-bound range-bound-low"
           style={{ left: `${leftPct}%` }}
         >
-          {currentRange.low}
+          {fmtVal(currentRange.low)}
         </div>
         <div
           className="range-bound range-bound-high"
           style={{ left: `${rightPct}%` }}
         >
-          {currentRange.high}
+          {fmtVal(currentRange.high)}
         </div>
         {showAnswer && answerPct != null && (
           <div
@@ -65,9 +75,9 @@ export default function RangeVisual({
         )}
       </div>
       <div className="range-labels">
-        <span>{fullRange.low}</span>
-        <span className="range-width">width: {currentRange.high - currentRange.low}</span>
-        <span>{fullRange.high}</span>
+        <span>{fmtFullVal(fullRange.low)}</span>
+        <span className="range-width">width: {fmtW(rangeWidth)}</span>
+        <span>{fmtFullVal(fullRange.high)}</span>
       </div>
     </div>
   );

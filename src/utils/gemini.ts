@@ -43,8 +43,11 @@ Look up the answer. Respond in JSON only, no markdown fences:
   "answerable": true/false,
   "answer": <number>,
   "source": "<short source description, e.g. 'Wikipedia — Richard III of England'>",
-  "note": "<optional brief clarification if the question is ambiguous>"
+  "note": "<optional brief clarification if the question is ambiguous>",
+  "type": "date" or "number"
 }
+
+Set "type" to "date" if the answer is a year or date (e.g. when something happened, was founded, was born, etc.). For date answers, express the answer as a decimal year (e.g. July 6 1483 = 1483.51). Set "type" to "number" for all other numeric answers.
 
 If the question cannot be resolved to a single number, set answerable to false and explain in note.`;
 
@@ -79,8 +82,11 @@ Respond in JSON only, no markdown fences:
   "answer": <the number>,
   "source": "<short source>",
   "initial_range_low": <number — should be wide enough to be non-trivial>,
-  "initial_range_high": <number>
-}`;
+  "initial_range_high": <number>,
+  "type": "date" or "number"
+}
+
+Set "type" to "date" if the answer is a year or date (e.g. when something happened, was founded, was born, etc.). For date answers, express the answer as a decimal year (e.g. July 6 1483 = 1483.51). Set "type" to "number" for all other numeric answers.`;
 
   const text = await callGemini(apiKey, prompt);
   return parseJSON<AIGeneratedQuestion>(text);

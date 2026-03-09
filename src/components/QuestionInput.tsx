@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AIValidationResult, AIGeneratedQuestion, Player, Range } from "../types";
+import type { AIValidationResult, AIGeneratedQuestion, Player, Range, QuestionType } from "../types";
 import { validateQuestion, generateQuestion } from "../utils/gemini";
 
 interface Props {
@@ -12,7 +12,8 @@ interface Props {
     answer: number,
     source: string,
     aiNote?: string,
-    askedByPlayerId?: string
+    askedByPlayerId?: string,
+    questionType?: QuestionType,
   ) => void;
 }
 
@@ -25,6 +26,7 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
   const [rangeHigh, setRangeHigh] = useState("");
   const [askedBy, setAskedBy] = useState(players[0]?.id || "");
   const [topicHint, setTopicHint] = useState("");
+  const [isDateQuestion, setIsDateQuestion] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validation, setValidation] = useState<AIValidationResult | null>(null);
@@ -53,13 +55,15 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
 
   const confirmManual = () => {
     if (!validation) return;
+    const qType = validation.type === "date" || isDateQuestion ? "date" : "number";
     onQuestionReady(
       question.trim(),
       { low: Number(rangeLow), high: Number(rangeHigh) },
       validation.answer,
       validation.source,
       validation.note,
-      askedBy
+      askedBy,
+      qType,
     );
   };
 
@@ -85,7 +89,10 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
       generated.question,
       { low: Number(genRangeLow), high: Number(genRangeHigh) },
       generated.answer,
-      generated.source
+      generated.source,
+      undefined,
+      undefined,
+      generated.type === "date" ? "date" : "number",
     );
   };
 
@@ -140,6 +147,15 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
               ))}
             </select>
           </div>
+          <label className="date-toggle">
+            <input
+              type="checkbox"
+              checked={isDateQuestion}
+              onChange={(e) => setIsDateQuestion(e.target.checked)}
+              disabled={loading}
+            />
+            Date question (answer is a year/date)
+          </label>
           {validation && (
             <div className="validation-success">
               <p>✓ Answer found (source: {validation.source})</p>
