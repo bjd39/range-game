@@ -14,6 +14,7 @@ export default function App() {
     () => localStorage.getItem("range-game-api-key")
   );
   const [showKeyInput, setShowKeyInput] = useState(false);
+  const [skippedKey, setSkippedKey] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark" | "system">(
     () => (localStorage.getItem("range-game-theme") as "light" | "dark") || "system"
   );
@@ -42,6 +43,12 @@ export default function App() {
   const saveApiKey = useCallback((key: string) => {
     setApiKey(key);
     localStorage.setItem("range-game-api-key", key);
+  }, []);
+
+  const clearApiKey = useCallback(() => {
+    setApiKey(null);
+    localStorage.removeItem("range-game-api-key");
+    setShowKeyInput(false);
   }, []);
 
   const persistSession = useCallback((sessionRounds: Round[], sessionPlayers: Player[]) => {
@@ -109,10 +116,10 @@ export default function App() {
     setScreen("setup");
   };
 
-  if (!apiKey) {
+  if (!apiKey && screen === "setup" && players.length === 0 && !skippedKey) {
     return (
       <div className="app-container">
-        <ApiKeyPrompt onSubmit={saveApiKey} />
+        <ApiKeyPrompt onSubmit={saveApiKey} onSkip={() => setSkippedKey(true)} />
       </div>
     );
   }
@@ -127,6 +134,7 @@ export default function App() {
                 saveApiKey(key);
                 setShowKeyInput(false);
               }}
+              onUnset={apiKey ? clearApiKey : undefined}
             />
           </div>
         </div>
@@ -134,12 +142,18 @@ export default function App() {
 
       <header className="app-header">
         <div className="api-indicator">
-          <span className="api-dot" />
-          API key set
+          {apiKey ? (
+            <>
+              <span className="api-dot" />
+              API key set
+            </>
+          ) : (
+            <span className="api-dot-off" />
+          )}
           <button
             className="btn-icon"
             onClick={() => setShowKeyInput(true)}
-            title="Change API key"
+            title={apiKey ? "Change API key" : "Set API key"}
           >
             ⚙
           </button>
@@ -176,7 +190,7 @@ export default function App() {
           <div className="game-main">
             <GameRound
               key={skipCounter}
-              apiKey={apiKey}
+              apiKey={apiKey ?? null}
               players={players}
               timerDuration={timerDuration}
               previousQuestions={[

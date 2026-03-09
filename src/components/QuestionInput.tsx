@@ -3,13 +3,13 @@ import type { AIValidationResult, AIGeneratedQuestion, Player, Range, QuestionTy
 import { validateQuestion, generateQuestion } from "../utils/gemini";
 
 interface Props {
-  apiKey: string;
+  apiKey: string | null;
   players: Player[];
   previousQuestions: string[];
   onQuestionReady: (
     question: string,
     initialRange: Range,
-    answer: number,
+    answer: number | null,
     source: string,
     aiNote?: string,
     askedByPlayerId?: string,
@@ -19,8 +19,11 @@ interface Props {
 
 type Tab = "ask" | "generate";
 
+const AI_TOOLTIP = "Add API key to activate AI features";
+
 export default function QuestionInput({ apiKey, players, previousQuestions, onQuestionReady }: Props) {
-  const [tab, setTab] = useState<Tab>("generate");
+  const hasAI = !!apiKey;
+  const [tab, setTab] = useState<Tab>(hasAI ? "generate" : "ask");
   const [question, setQuestion] = useState("");
   const [rangeLow, setRangeLow] = useState("");
   const [rangeHigh, setRangeHigh] = useState("");
@@ -37,11 +40,27 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
 
   const handleManualSubmit = async () => {
     if (!question.trim() || !rangeLow || !rangeHigh) return;
+
+    if (!hasAI) {
+      // No API key — start round without AI validation, answer resolved later
+      const qType = isDateQuestion ? "date" : "number";
+      onQuestionReady(
+        question.trim(),
+        { low: Number(rangeLow), high: Number(rangeHigh) },
+        null,
+        "manual",
+        undefined,
+        askedBy,
+        qType,
+      );
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setValidation(null);
     try {
-      const result = await validateQuestion(apiKey, question.trim());
+      const result = await validateQuestion(apiKey!, question.trim());
       if (result.answerable) {
         setValidation(result);
       } else {
@@ -69,6 +88,7 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
   };
 
   const handleGenerate = async () => {
+    if (!apiKey) return;
     setLoading(true);
     setError(null);
     setGenerated(null);
@@ -101,8 +121,10 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
     <div className="question-input">
       <div className="tabs">
         <button
-          className={`tab ${tab === "generate" ? "active" : ""}`}
-          onClick={() => { setTab("generate"); setError(null); setValidation(null); }}
+          className={`tab ${tab === "generate" ? "active" : ""} ${!hasAI ? "tab-disabled" : ""}`}
+          onClick={() => { if (hasAI) { setTab("generate"); setError(null); setValidation(null); } }}
+          title={!hasAI ? AI_TOOLTIP : undefined}
+          aria-disabled={!hasAI}
         >
           Generate a question
         </button>
@@ -172,7 +194,7 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
               disabled={loading || !question.trim() || !rangeLow || !rangeHigh}
               onClick={handleManualSubmit}
             >
-              {loading ? <><span className="spinner" />Checking…</> : "Submit Question"}
+              {loading ? <><span className="spinner" />Checking…</> : hasAI ? "Submit Question" : "Start Round"}
             </button>
           )}
         </div>

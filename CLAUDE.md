@@ -19,6 +19,7 @@ npx tsc --noEmit     # type-check only
 - `src/components/GameRound.tsx` — Round orchestrator: question → narrowing → reveal phases. Keyed on `skipCounter` to control re-mounting (not `rounds.length`)
 - `src/components/QuestionInput.tsx` — Manual question entry or AI generation with Gemini
 - `src/components/NarrowingPhase.tsx` — Players narrow the range with a timer
+- `src/components/ResolvePhase.tsx` — Answer input when playing without AI (no pre-set answer)
 - `src/components/RevealPhase.tsx` — Answer reveal, win/loss result
 - `src/components/SetupScreen.tsx` — Player selection and timer config
 - `src/components/Scoreboard.tsx` — Live scores during a game

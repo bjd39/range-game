@@ -3,13 +3,14 @@ import type { Player, Narrowing, Range, Round, QuestionType } from "../types";
 import QuestionInput from "./QuestionInput";
 import NarrowingPhase from "./NarrowingPhase";
 import RevealPhase from "./RevealPhase";
+import ResolvePhase from "./ResolvePhase";
 
-type Phase = "question" | "narrowing" | "reveal";
+type Phase = "question" | "narrowing" | "resolve" | "reveal";
 
 interface QuestionData {
   question: string;
   initialRange: Range;
-  answer: number;
+  answer: number | null;
   source: string;
   aiNote?: string;
   initialHolderId: string | null;
@@ -17,7 +18,7 @@ interface QuestionData {
 }
 
 interface Props {
-  apiKey: string;
+  apiKey: string | null;
   players: Player[];
   timerDuration: number;
   previousQuestions: string[];
@@ -41,12 +42,13 @@ export default function GameRound({
   const [questionData, setQuestionData] = useState<QuestionData | null>(null);
   const [finalRange, setFinalRange] = useState<Range | null>(null);
   const [holderId, setHolderId] = useState<string | null>(null);
+  const [narrowings, setNarrowings] = useState<Narrowing[]>([]);
   const [roundSaved, setRoundSaved] = useState(false);
 
   const handleQuestionReady = (
     question: string,
     initialRange: Range,
-    answer: number,
+    answer: number | null,
     source: string,
     aiNote?: string,
     askedByPlayerId?: string,
@@ -65,11 +67,12 @@ export default function GameRound({
     fRange: Range,
     holder: string | null,
   ): Round => {
-    const inRange = qd.answer >= fRange.low && qd.answer <= fRange.high;
+    const answer = qd.answer ?? 0;
+    const inRange = answer >= fRange.low && answer <= fRange.high;
     return {
       id: crypto.randomUUID(),
       question: qd.question,
-      answer: qd.answer,
+      answer,
       source: qd.source,
       aiNote: qd.aiNote,
       questionType: qd.questionType,
@@ -89,14 +92,28 @@ export default function GameRound({
   ) => {
     setFinalRange(range);
     setHolderId(holder);
-    setPhase("reveal");
+    setNarrowings(narrs);
 
-    // Persist immediately so data isn't lost if user clicks "End Game"
-    if (questionData) {
+    if (questionData?.answer == null) {
+      // No answer yet — need user to resolve
+      setPhase("resolve");
+    } else {
+      setPhase("reveal");
+      // Persist immediately so data isn't lost if user clicks "End Game"
       const round = buildRound(questionData, narrs, range, holder);
       onRoundComplete(round);
       setRoundSaved(true);
     }
+  };
+
+  const handleResolve = (answer: number, source: string) => {
+    if (!questionData || !finalRange) return;
+    const resolved = { ...questionData, answer, source };
+    setQuestionData(resolved);
+    setPhase("reveal");
+    const round = buildRound(resolved, narrowings, finalRange, holderId);
+    onRoundComplete(round);
+    setRoundSaved(true);
   };
 
   const handleNext = () => {
@@ -140,7 +157,16 @@ export default function GameRound({
         />
       )}
 
-      {phase === "reveal" && questionData && finalRange && (
+      {phase === "resolve" && questionData && finalRange && (
+        <ResolvePhase
+          question={questionData.question}
+          finalRange={finalRange}
+          questionType={questionData.questionType}
+          onResolve={handleResolve}
+        />
+      )}
+
+      {phase === "reveal" && questionData && questionData.answer != null && finalRange && (
         <RevealPhase
           question={questionData.question}
           answer={questionData.answer}

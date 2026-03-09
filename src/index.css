@@ -980,6 +980,73 @@ input[type="range"] {
   text-align: center;
 }
 
+/* Disabled tab (no API key) */
+
+.tab-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.tab-disabled:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* API dot states */
+
+.api-dot-off {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.4;
+}
+
+/* Skip API key button */
+
+.skip-key-btn,
+.unset-key-btn {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+/* Resolve Phase */
+
+.resolve-phase {
+  text-align: center;
+}
+
+.resolve-range-info {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.resolve-form {
+  max-width: 360px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resolve-label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 /* Error */
 
 .error-banner {
