@@ -975,9 +975,4 @@ input[type="range"] {
     gap: 1rem;
     flex: 1;
   }
-
-  .narrowing-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }

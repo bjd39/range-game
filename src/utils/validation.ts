@@ -1,6 +1,6 @@
 import type { Range } from "../types";
 
-export interface NarrowingError {
+interface NarrowingError {
   message: string;
 }
 
