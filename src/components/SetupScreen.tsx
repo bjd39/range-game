@@ -61,7 +61,7 @@ export default function SetupScreen({ existingPlayers, onStart, onViewHistory }:
 
   return (
     <div className="setup-screen">
-      <h1>Range Game</h1>
+      <h1>Range game</h1>
       <p className="subtitle">Narrow the range. Don't get caught.</p>
 
       <section className="setup-section">
