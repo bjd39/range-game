@@ -65,16 +65,31 @@ export async function generateQuestion(
     ? `\nDo NOT repeat or closely resemble any of these previously asked questions:\n${recentQuestions.map((q) => `- ${q}`).join("\n")}\n`
     : "";
 
-  const prompt = `Generate a trivia question for a guessing game where the answer must be a single number (a year, a quantity, a measurement, a distance, etc.).
-
+  const prompt = `Generate a trivia question for a guessing game where the answer must be a single number (a year, a quantity, a measurement, a distance, a percentage, a ratio, etc.).
 ${topicHint ? `Topic/category hint: "${topicHint}"` : "Choose an interesting and varied topic."}
 ${avoidSection}
-
 The question should be:
 - Unambiguous and resolvable via a quick lookup
 - Interesting and fun for a group of adults
 - Not too obscure but not trivially easy
 - IMPORTANT: The question must be neutrally worded. Do NOT include hints, clues, or adjectives that give away the magnitude of the answer. For example, do NOT say "lived an incredibly long life" when asking about someone's age at death. Just ask the factual question directly.
+
+Here are some examples of good questions, shown as (topic hint → question → answer):
+
+"Ancient Egypt" → "How many blocks are in the Great Pyramid?" → 2300000
+"Museums" → "How many objects are in the collection of the British Museum?" → 8000000
+"Las Vegas" → "How many slot machines are in Las Vegas?" → 150000
+"Famous speeches" → "How many words are in MLK's 'I Have a Dream' speech?" → 1667
+"Japanese finance" → "How many publicly listed Japanese companies are there?" → 3941
+"Middle East" → "What is the population of Egypt?" → 115000000
+"Age of exploration" → "In what year was the first solo circumnavigation of the globe?" → 1898
+"History of inventions" → "In what year did the wheelbarrow arrive in Europe?" → 1200
+"Trees" → "How tall is the tallest standing tree, in metres?" → 116
+"Birds" → "What is the mass of the smallest bird egg, in grams?" → 0.365
+"Swimming" → "What is the fastest English Channel swim, in hours?" → 6.75
+"UK economy" → "What proportion of UK GDP is attributed to London (%)?" → 22
+
+Notice the range: answers span many orders of magnitude, topics vary widely (history, geography, biology, economics, sport, culture), and units are always specified when needed. Questions about when events happened are particularly good. Avoid questions that require real-time data unless the topic hint specifically requests it.
 
 Respond in JSON only, no markdown fences:
 {
