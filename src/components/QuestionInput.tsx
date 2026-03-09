@@ -33,6 +33,7 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
   const [generated, setGenerated] = useState<AIGeneratedQuestion | null>(null);
   const [genRangeLow, setGenRangeLow] = useState("");
   const [genRangeHigh, setGenRangeHigh] = useState("");
+  const [genRangeSetBy, setGenRangeSetBy] = useState(players[0]?.id || "");
 
   const handleManualSubmit = async () => {
     if (!question.trim() || !rangeLow || !rangeHigh) return;
@@ -91,7 +92,7 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
       generated.answer,
       generated.source,
       undefined,
-      undefined,
+      genRangeSetBy,
       generated.type === "date" ? "date" : "number",
     );
   };
@@ -195,6 +196,14 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
               >
                 {loading ? "Generating…" : "Generate Question"}
               </button>
+              <div className="or-separator">or</div>
+              <button
+                className="btn-secondary"
+                disabled={loading}
+                onClick={() => { setTopicHint(""); handleGenerate(); }}
+              >
+                Spin the Wheel
+              </button>
             </>
           ) : (
             <>
@@ -216,6 +225,14 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
                   value={genRangeHigh}
                   onChange={(e) => setGenRangeHigh(e.target.value)}
                 />
+              </div>
+              <div className="asked-by-row">
+                <label>Range set by:</label>
+                <select value={genRangeSetBy} onChange={(e) => setGenRangeSetBy(e.target.value)}>
+                  {players.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="generated-actions">
                 <button
