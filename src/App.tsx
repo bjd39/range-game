@@ -90,6 +90,20 @@ export default function App() {
     persistSession(newRounds, players);
   }, [players, persistSession]);
 
+  const handleAddPlayer = useCallback((player: Player) => {
+    setPlayers((prev) => {
+      const updated = [...prev, player];
+      // Persist the new player to store
+      const freshStore = loadStore();
+      if (!freshStore.players.find((p) => p.id === player.id)) {
+        freshStore.players.push(player);
+        setStore(freshStore);
+        saveStore(freshStore);
+      }
+      return updated;
+    });
+  }, []);
+
   const handleEndGame = () => {
     setStore(loadStore());
     setScreen("setup");
@@ -180,6 +194,7 @@ export default function App() {
               players={players}
               rounds={rounds}
               currentHolderId={null}
+              onAddPlayer={handleAddPlayer}
             />
           </aside>
         </div>

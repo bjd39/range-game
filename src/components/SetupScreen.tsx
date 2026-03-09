@@ -134,6 +134,7 @@ export default function SetupScreen({ existingPlayers, onStart, onViewHistory }:
             </button>
           ))}
         </div>
+        <p className="timer-hint">Time limit between guesses, not total round time.</p>
       </section>
 
       <div className="setup-actions">

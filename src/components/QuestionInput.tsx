@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AIValidationResult, Player, Range } from "../types";
+import type { AIValidationResult, AIGeneratedQuestion, Player, Range } from "../types";
 import { validateQuestion, generateQuestion } from "../utils/gemini";
 
 interface Props {
@@ -28,6 +28,9 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validation, setValidation] = useState<AIValidationResult | null>(null);
+  const [generated, setGenerated] = useState<AIGeneratedQuestion | null>(null);
+  const [genRangeLow, setGenRangeLow] = useState("");
+  const [genRangeHigh, setGenRangeHigh] = useState("");
 
   const handleManualSubmit = async () => {
     if (!question.trim() || !rangeLow || !rangeHigh) return;
@@ -63,19 +66,27 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
+    setGenerated(null);
     try {
       const result = await generateQuestion(apiKey, topicHint.trim() || undefined, previousQuestions);
-      onQuestionReady(
-        result.question,
-        { low: result.initial_range_low, high: result.initial_range_high },
-        result.answer,
-        result.source
-      );
+      setGenerated(result);
+      setGenRangeLow("");
+      setGenRangeHigh("");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "API error");
     } finally {
       setLoading(false);
     }
+  };
+
+  const confirmGenerated = () => {
+    if (!generated || !genRangeLow || !genRangeHigh) return;
+    onQuestionReady(
+      generated.question,
+      { low: Number(genRangeLow), high: Number(genRangeHigh) },
+      generated.answer,
+      generated.source
+    );
   };
 
   return (
@@ -152,20 +163,61 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
 
       {tab === "generate" && (
         <div className="tab-content">
-          <input
-            type="text"
-            placeholder="Topic hint (optional), e.g. 'space exploration'"
-            value={topicHint}
-            onChange={(e) => setTopicHint(e.target.value)}
-            disabled={loading}
-          />
-          <button
-            className="btn-primary"
-            disabled={loading}
-            onClick={handleGenerate}
-          >
-            {loading ? "Generating…" : "Generate Question"}
-          </button>
+          {!generated ? (
+            <>
+              <input
+                type="text"
+                placeholder="Topic hint (optional), e.g. 'space exploration'"
+                value={topicHint}
+                onChange={(e) => setTopicHint(e.target.value)}
+                disabled={loading}
+              />
+              <button
+                className="btn-primary"
+                disabled={loading}
+                onClick={handleGenerate}
+              >
+                {loading ? "Generating…" : "Generate Question"}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="generated-question">
+                <p className="generated-question-text">{generated.question}</p>
+              </div>
+              <label className="range-label">Set the initial range:</label>
+              <div className="range-inputs">
+                <input
+                  type="number"
+                  placeholder="Range low"
+                  value={genRangeLow}
+                  onChange={(e) => setGenRangeLow(e.target.value)}
+                />
+                <span className="range-separator">to</span>
+                <input
+                  type="number"
+                  placeholder="Range high"
+                  value={genRangeHigh}
+                  onChange={(e) => setGenRangeHigh(e.target.value)}
+                />
+              </div>
+              <div className="generated-actions">
+                <button
+                  className="btn-primary"
+                  disabled={!genRangeLow || !genRangeHigh}
+                  onClick={confirmGenerated}
+                >
+                  Start Round
+                </button>
+                <button
+                  className="btn-secondary"
+                  onClick={() => { setGenerated(null); setGenRangeLow(""); setGenRangeHigh(""); }}
+                >
+                  Re-generate
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
