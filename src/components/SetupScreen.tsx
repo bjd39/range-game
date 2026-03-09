@@ -20,7 +20,7 @@ export default function SetupScreen({ existingPlayers, onStart, onViewHistory }:
   ];
   const [timerDuration, setTimerDuration] = useState(60);
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
-  const blurTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const blurTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const addPlayer = () => setNames([...names, ""]);
   const removePlayer = (i: number) => {
