@@ -1,6 +1,6 @@
 import type { AIValidationResult, AIGeneratedQuestion } from "../types";
 
-async function callGemini(apiKey: string, prompt: string): Promise<string> {
+async function callGemini(apiKey: string, prompt: string, temperature = 0.1): Promise<string> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
@@ -8,7 +8,7 @@ async function callGemini(apiKey: string, prompt: string): Promise<string> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.1 },
+        generationConfig: { temperature },
       }),
     }
   );
@@ -60,12 +60,55 @@ export async function generateQuestion(
   topicHint?: string,
   previousQuestions?: string[]
 ): Promise<AIGeneratedQuestion> {
+  const answerTypes = [
+    "a year/date",
+    "a count/quantity",
+    "a measurement/distance/height/weight",
+    "a percentage/proportion/ratio",
+    "a duration/time",
+    "a monetary value/cost/price",
+  ];
+  const framingAngles = [
+    "a historical event or milestone",
+    "a natural/scientific phenomenon",
+    "a cultural/artistic achievement",
+    "an engineering or architectural feat",
+    "a geographic or demographic fact",
+    "a sports or competition record",
+    "an economic or financial statistic",
+  ];
+
+  // Build a framing directive: ~15% wild card, otherwise 3 ranked combinations
+  let framingDirective: string;
+  if (Math.random() < 0.15) {
+    framingDirective = `For this question, think outside the box — surprise the players with an unusual or unexpected angle that doesn't fit neatly into standard categories. Be creative with the type of answer and framing.`;
+  } else {
+    // Pick 3 distinct combinations from answerTypes × framingAngles
+    const combos: Array<[string, string]> = [];
+    const usedKeys = new Set<string>();
+    while (combos.length < 3) {
+      const at = answerTypes[Math.floor(Math.random() * answerTypes.length)];
+      const fa = framingAngles[Math.floor(Math.random() * framingAngles.length)];
+      const key = `${at}|${fa}`;
+      if (!usedKeys.has(key)) {
+        usedKeys.add(key);
+        combos.push([at, fa]);
+      }
+    }
+    framingDirective = `For this question, prefer one of these framings (in order of preference, but fall back to the next if a good question isn't possible):
+1. Answer should be ${combos[0][0]}, related to ${combos[0][1]}
+2. Answer should be ${combos[1][0]}, related to ${combos[1][1]}
+3. Answer should be ${combos[2][0]}, related to ${combos[2][1]}
+If none of these framings work well with the topic, use your best judgement to create an interesting question.`;
+  }
+
   const recentQuestions = previousQuestions?.slice(-100) ?? [];
   const avoidSection = recentQuestions.length > 0
     ? `\nDo NOT repeat or closely resemble any of these previously asked questions:\n${recentQuestions.map((q) => `- ${q}`).join("\n")}\n`
     : "";
 
   const prompt = `Generate a trivia question for a guessing game where the answer must be a single number (a year, a quantity, a measurement, a distance, a percentage, a ratio, etc.).
+${framingDirective}
 ${topicHint ? `Topic/category hint: "${topicHint}"` : "Choose an interesting and varied topic."}
 ${avoidSection}
 The question should be:
@@ -103,6 +146,6 @@ Respond in JSON only, no markdown fences:
 
 Set "type" to "date" if the answer is a year or date (e.g. when something happened, was founded, was born, etc.). For date answers, express the answer as a decimal year (e.g. July 6 1483 = 1483.51). Set "type" to "number" for all other numeric answers.`;
 
-  const text = await callGemini(apiKey, prompt);
+  const text = await callGemini(apiKey, prompt, 0.7);
   return parseJSON<AIGeneratedQuestion>(text);
 }
