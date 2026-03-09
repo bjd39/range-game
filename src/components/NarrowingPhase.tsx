@@ -163,25 +163,29 @@ export default function NarrowingPhase({
                 className="btn-quick"
                 onClick={() => handleQuickNarrow(p.id, trim10bottom)}
               >
-                10% off bottom → {trim10bottom.low}
+                <span className="btn-quick-full">10% off bottom → {trim10bottom.low}</span>
+                <span className="btn-quick-short">↑{trim10bottom.low}</span>
               </button>
               <button
                 className="btn-quick"
                 onClick={() => handleQuickNarrow(p.id, trim5both)}
               >
-                5% off both → {trim5both.low}–{trim5both.high}
+                <span className="btn-quick-full">5% off both → {trim5both.low}–{trim5both.high}</span>
+                <span className="btn-quick-short">↑↓5%</span>
               </button>
               <button
                 className="btn-quick"
                 onClick={() => handleQuickNarrow(p.id, trim10top)}
               >
-                10% off top → {trim10top.high}
+                <span className="btn-quick-full">10% off top → {trim10top.high}</span>
+                <span className="btn-quick-short">↓{trim10top.high}</span>
               </button>
               <button
                 className="btn-secondary btn-small"
                 onClick={() => setSelectedPlayer(p.id)}
               >
-                Custom
+                <span className="btn-quick-full">Custom</span>
+                <span className="btn-quick-short">...</span>
               </button>
             </div>
           </div>

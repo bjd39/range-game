@@ -949,6 +949,10 @@ input[type="range"] {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Responsive labels */
+
+.btn-quick-short { display: none; }
+
 /* Responsive */
 
 @media (max-width: 700px) {
@@ -974,5 +978,22 @@ input[type="range"] {
     flex-direction: row;
     gap: 1rem;
     flex: 1;
+  }
+
+  .btn-quick-full { display: none; }
+  .btn-quick-short { display: inline; }
+
+  .btn-quick {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .player-row-actions {
+    gap: 0.25rem;
+  }
+
+  .player-row-name {
+    font-size: 0.8rem;
+    min-width: 50px;
   }
 }
