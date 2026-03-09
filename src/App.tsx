@@ -37,24 +37,39 @@ export default function App() {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [skipCounter, setSkipCounter] = useState(0);
   const sessionIdRef = useRef(crypto.randomUUID());
+  const roundsRef = useRef<Round[]>([]);
 
   const saveApiKey = useCallback((key: string) => {
     setApiKey(key);
     localStorage.setItem("range-game-api-key", key);
   }, []);
 
-  const persistStore = useCallback((updated: GameStore) => {
-    setStore(updated);
-    saveStore(updated);
+  const persistSession = useCallback((sessionRounds: Round[], sessionPlayers: Player[]) => {
+    const currentStore = loadStore();
+    const sid = sessionIdRef.current;
+    const existingIdx = currentStore.sessions.findIndex((s) => s.id === sid);
+    const session: GameSession = {
+      id: sid,
+      date: new Date().toISOString(),
+      playerIds: sessionPlayers.map((p) => p.id),
+      rounds: sessionRounds,
+    };
+    if (existingIdx >= 0) {
+      currentStore.sessions[existingIdx] = session;
+    } else {
+      currentStore.sessions.push(session);
+    }
+    setStore(currentStore);
+    saveStore(currentStore);
   }, []);
 
   const handleStart = (selectedPlayers: Player[], timer: number) => {
     setPlayers(selectedPlayers);
     setTimerDuration(timer);
     setRounds([]);
+    roundsRef.current = [];
     sessionIdRef.current = crypto.randomUUID();
 
-    // Re-read store to pick up any data persisted during previous session
     const freshStore = loadStore();
     const updatedPlayers = [...freshStore.players];
     selectedPlayers.forEach((p) => {
@@ -62,31 +77,18 @@ export default function App() {
         updatedPlayers.push(p);
       }
     });
-    persistStore({ ...freshStore, players: updatedPlayers });
+    const updated = { ...freshStore, players: updatedPlayers };
+    setStore(updated);
+    saveStore(updated);
     setScreen("playing");
   };
 
-  const handleRoundComplete = (round: Round) => {
-    const newRounds = [...rounds, round];
+  const handleRoundComplete = useCallback((round: Round) => {
+    const newRounds = [...roundsRef.current, round];
+    roundsRef.current = newRounds;
     setRounds(newRounds);
-
-    // Update session in store (re-read to avoid stale state)
-    const updatedStore = { ...loadStore() };
-    const sid = sessionIdRef.current;
-    const existingIdx = updatedStore.sessions.findIndex((s) => s.id === sid);
-    const session: GameSession = {
-      id: sid,
-      date: new Date().toISOString(),
-      playerIds: players.map((p) => p.id),
-      rounds: newRounds,
-    };
-    if (existingIdx >= 0) {
-      updatedStore.sessions[existingIdx] = session;
-    } else {
-      updatedStore.sessions.push(session);
-    }
-    persistStore(updatedStore);
-  };
+    persistSession(newRounds, players);
+  }, [players, persistSession]);
 
   const handleEndGame = () => {
     setStore(loadStore());

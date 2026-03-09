@@ -38,9 +38,9 @@ export default function GameRound({
 }: Props) {
   const [phase, setPhase] = useState<Phase>("question");
   const [questionData, setQuestionData] = useState<QuestionData | null>(null);
-  const [narrowings, setNarrowings] = useState<Narrowing[]>([]);
   const [finalRange, setFinalRange] = useState<Range | null>(null);
   const [holderId, setHolderId] = useState<string | null>(null);
+  const [roundSaved, setRoundSaved] = useState(false);
 
   const handleQuestionReady = (
     question: string,
@@ -50,7 +50,6 @@ export default function GameRound({
     aiNote?: string,
     askedByPlayerId?: string,
   ) => {
-    // For AI-generated questions (no askedByPlayerId), pick a random player
     const initialHolderId = askedByPlayerId
       ?? players[Math.floor(Math.random() * players.length)].id;
 
@@ -58,39 +57,55 @@ export default function GameRound({
     setPhase("narrowing");
   };
 
+  const buildRound = (
+    qd: QuestionData,
+    narrs: Narrowing[],
+    fRange: Range,
+    holder: string | null,
+  ): Round => {
+    const inRange = qd.answer >= fRange.low && qd.answer <= fRange.high;
+    return {
+      id: crypto.randomUUID(),
+      question: qd.question,
+      answer: qd.answer,
+      source: qd.source,
+      aiNote: qd.aiNote,
+      initialRange: qd.initialRange,
+      narrowings: narrs,
+      finalRange: fRange,
+      holderId: holder,
+      result: holder == null ? "no_holder" : inRange ? "win" : "loss",
+      timestamp: Date.now(),
+    };
+  };
+
   const handleNarrowingComplete = (
     narrs: Narrowing[],
     range: Range,
     holder: string | null
   ) => {
-    setNarrowings(narrs);
     setFinalRange(range);
     setHolderId(holder);
     setPhase("reveal");
+
+    // Persist immediately so data isn't lost if user clicks "End Game"
+    if (questionData) {
+      const round = buildRound(questionData, narrs, range, holder);
+      onRoundComplete(round);
+      setRoundSaved(true);
+    }
   };
 
   const handleNext = () => {
-    if (!questionData || !finalRange) return;
-
-    const inRange =
-      questionData.answer >= finalRange.low &&
-      questionData.answer <= finalRange.high;
-
-    const round: Round = {
-      id: crypto.randomUUID(),
-      question: questionData.question,
-      answer: questionData.answer,
-      source: questionData.source,
-      aiNote: questionData.aiNote,
-      initialRange: questionData.initialRange,
-      narrowings,
-      finalRange,
-      holderId,
-      result: holderId == null ? "no_holder" : inRange ? "win" : "loss",
-      timestamp: Date.now(),
-    };
-
-    onRoundComplete(round);
+    // Round was already saved when entering reveal phase.
+    // This just advances to the next round by triggering a re-key in the parent.
+    if (!roundSaved && questionData && finalRange) {
+      // Fallback: save if somehow it wasn't saved yet
+      const round = buildRound(questionData, [], finalRange, holderId);
+      onRoundComplete(round);
+    }
+    // Trigger re-mount for next round by calling onSkipRound
+    // (parent re-keys based on rounds.length which changed in onRoundComplete)
   };
 
   return (
