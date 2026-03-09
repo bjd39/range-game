@@ -172,7 +172,7 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
               disabled={loading || !question.trim() || !rangeLow || !rangeHigh}
               onClick={handleManualSubmit}
             >
-              {loading ? "Checking…" : "Submit Question"}
+              {loading ? <><span className="spinner" />Checking…</> : "Submit Question"}
             </button>
           )}
         </div>
@@ -194,7 +194,7 @@ export default function QuestionInput({ apiKey, players, previousQuestions, onQu
                 disabled={loading}
                 onClick={handleGenerate}
               >
-                {loading ? "Generating…" : "Generate Question"}
+                {loading ? <><span className="spinner" />Generating…</> : "Generate Question"}
               </button>
               <div className="or-separator">or</div>
               <button

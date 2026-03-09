@@ -175,7 +175,7 @@ export default function App() {
         <div className="game-layout">
           <div className="game-main">
             <GameRound
-              key={`${rounds.length}-${skipCounter}`}
+              key={skipCounter}
               apiKey={apiKey}
               players={players}
               timerDuration={timerDuration}

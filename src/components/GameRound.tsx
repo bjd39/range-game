@@ -107,8 +107,7 @@ export default function GameRound({
       const round = buildRound(questionData, [], finalRange, holderId);
       onRoundComplete(round);
     }
-    // Trigger re-mount for next round by calling onSkipRound
-    // (parent re-keys based on rounds.length which changed in onRoundComplete)
+    onSkipRound();
   };
 
   return (
