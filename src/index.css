@@ -294,7 +294,7 @@ input[type="range"] {
 .timer-hint {
   font-size: 0.8rem;
   color: var(--text-muted);
-  margin-top: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
 .setup-actions {

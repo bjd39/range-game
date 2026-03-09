@@ -123,6 +123,7 @@ export default function SetupScreen({ existingPlayers, onStart, onViewHistory }:
 
       <section className="setup-section">
         <h2>Timer</h2>
+        <p className="timer-hint">Time limit between guesses, not total round time.</p>
         <div className="timer-options">
           {timerOptions.map((opt) => (
             <button
@@ -134,7 +135,6 @@ export default function SetupScreen({ existingPlayers, onStart, onViewHistory }:
             </button>
           ))}
         </div>
-        <p className="timer-hint">Time limit between guesses, not total round time.</p>
       </section>
 
       <div className="setup-actions">

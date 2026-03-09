@@ -25,13 +25,13 @@ export function validateNarrowing(
   const currentWidth = current.high - current.low;
   const proposedWidth = proposed.high - proposed.low;
 
-  if (proposedWidth > currentWidth * 0.9) {
-    const maxWidth = currentWidth * 0.9;
+  if (proposedWidth > currentWidth * 0.905) {
+    const maxWidth = currentWidth * 0.905;
     const formattedMax = questionType === "date"
       ? formatDateWidth(maxWidth)
       : String(Math.floor(maxWidth));
     return {
-      message: `Must narrow by at least 10%. Maximum width: ${formattedMax}.`,
+      message: `Must narrow by at least ~10%. Maximum width: ${formattedMax}.`,
     };
   }
 
