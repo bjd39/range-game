@@ -43,6 +43,7 @@ npx tsc --noEmit     # type-check only
 ## Maintenance
 
 - **Always update this file** when changing project structure, adding/removing files, or altering conventions
+- **Always update README.md** when adding or changing user-facing features
 
 ## Things to watch out for
 

@@ -15,8 +15,12 @@ A browser-based multiplayer party game where players guess numerical answers to 
 ## Features
 
 - AI question generation and validation via Gemini Flash
+- **Play without AI** — skip the API key and enter questions manually; players resolve the answer after narrowing
+- **Date/year questions** — precision scales dynamically (years → months → days) as the range narrows
+- **"Spin the Wheel"** — fully random AI question generation
 - Quick-narrow buttons (10% off top/bottom, 5% off both ends)
 - Undo moves, skip questions
+- Add players mid-session
 - Persistent game history and leaderboard in localStorage
 - Export/import game data as JSON
 - Dark mode (auto or manual toggle)
@@ -29,7 +33,7 @@ npm install
 npm run dev
 ```
 
-You'll need a [Gemini API key](https://aistudio.google.com/apikey) — the app prompts for it on first load.
+Optionally provide a [Gemini API key](https://aistudio.google.com/apikey) for AI question generation — or skip it and play with manual questions only.
 
 ## Tech stack
 
